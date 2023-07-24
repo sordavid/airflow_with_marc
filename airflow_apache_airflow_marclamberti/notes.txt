@@ -1,0 +1,243 @@
+### Apache Airflow: The Hands-On Guide
+# this is a hands on guide from Marc Clamberti's udemy course
+
+### Why airflow?
+# Scenario: Triggered everyday at 8am
+# Download Data -> Process Data -> Store Data
+# API               Spark            Insert/Upate
+
+### Why airflow?
+# it is an open source platform to schedule and monitor workflows to run things in the right way, order and time.
+
+### Core components
+# webserver - flask serving with gunicorn serving the UI
+# scheduler - daemon in charge of scheduling workflows 
+# Metastore - database where metadata are stored 
+# Executor - class defining how your tasks should be executed
+# worker - process/sub process executing your task
+
+### What is a DAG
+# directed acyclic graph 
+# it is a data pipeline
+# consists of nodes and directed in one direction with dependecies (T1, T2, T3) >> (T4)
+
+### What is an operator?
+# a task in your DAG 
+
+### Different type of operators
+# Action operator - operators in charge of executing something (Python operator / Bash Operator / PostGres Operator)
+# Transfer operator - allows you to transfer data from source to destination
+# Sensor operator - allows you to wait for something to happen before you can use it (File sensor - waits for files to land, SQL sensor -
+wait for specific record in database )
+
+### Task Instance 
+# when operator runs in DAG , it becomes a task instance 
+
+### What airflow is not?
+# airflow is not a data streaming solution, nor a data processing framework.
+# you should not process terabytes or gigabytes of data through airflow 
+# airflow is a way to trigger external tools such as managing big amounts of data through Spark
+# don't trigger airflow every one second for example
+
+### scheduler files 
+# min_file_process_interval - number of seconds after which DAG file is parsed
+# dag_dir_list_interval - how often to scan DAGs directory for new files
+
+### Webserver 
+# worker_refresh_interval - Number of seconds to wait before refeshing a batch of workers
+
+
+#### SECTION 2 VIDEO 10 ####
+
+### running airflow / Docker Commands
+# docker run -it --rm -p 8080:8080 python:3.9-slim /bin/bash
+# starts a docker container to run airflow
+# change python with respect to version
+
+### docker ps 
+# checks to see running containers
+
+### docker stop <container id>
+# stops container
+
+### export AIRFLOW_HOME=/usr/local/airflow
+# Export the environment variable AIRFLOW_HOME used by Airflow to store the dags folder, logs folder and configuration file
+
+### apt-get update -y && apt-get install -y wget libczmq-dev curl libssl-dev git inetutils-telnet bind9utils freetds-dev libkrb5-dev libsasl2-dev libffi-dev libpq-dev freetds-bin build-essential default-libmysqlclient-dev apt-utils rsync zip unzip gcc && apt-get clean
+# install all tools and commands required for this tutorial
+
+### useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow
+# Create the user airflow, set its home directory to the value of AIRFLOW_HOME and log into it
+
+### cat /etc/passwd | grep airflow
+# Show the file /etc/passwd to check that the airflow user has been created
+
+### pip install --upgrade pip
+* Upgrade pip (already installed since we use the Docker image python 3.5)
+# pip is a python package manager
+
+### su - airflow
+# Log into airflow in the terminal
+
+### python -m venv .sandbox
+* Create the virtual env named sandbox
+
+### source .sandbox/bin/activate
+* Activate the virtual environment sandbox
+
+### deactivate 
+# deactivates py env
+
+### wget https://raw.githubusercontent.com/apache/airflow/constraints-2.0.2/constraints-3.8.txt --no-check-certificate
+* Download the requirement file to install the right version of Airflow’s dependencies 
+# I had to add the --no-check-certificate portion to bypass the certiciate valdiation 
+
+### pip install "apache-airflow[crypto,celery,postgres,cncf.kubernetes,docker]"==2.0.2 --constraint ./constraints-3.8.txt
+# to install airflow 
+
+### airflow db init
+* Initialise the metadatabase
+# This will create a bunch of new files
+# airflow.cfg - airflow configs that you can change
+# airflow.db - corresponds to the sql lite db which is used
+# logs - gets logs of scheduler and tasks
+# webserver_config.py - is used to configure webserver
+
+### airflow scheduler
+* Start Airflow’s scheduler
+
+### airflow users create -h
+# opens helpbox for creating a user
+
+### airflow users create -u admin -f admin -l admin -r Admin -e admin@airflow.com -p admin
+# copy and paste this to create an admin account
+
+### airflow webserver & 
+# runs airflow webserver in background 
+
+### localhost:8080 
+# type this into url to access webserver and login
+
+
+#### Section 3 Video 10 Running with DOCKER ####
+### Running airflow with docker 
+
+#### SECTION 2 VIDEO 11 ####
+### STARTING DOCKER 
+
+### docker build -t airflow-basic .
+# builds a docker image
+
+### docker run --rm -d -p 8080:8080 airflow-basic
+# binds port 8080 with your machines
+# -d runs container in background
+
+### docker image ls 
+# shows you the first docker image of airflow-basic and others
+
+### docker ps 
+# verifies whatever is running
+
+### docker kill [container]
+# kills your docker container
+
+### docker system prune -a
+# removes dangling images containers and remove any stopped containers with unused images if you used -a 
+
+
+#### SECTION 2 VIDEO 12 ####
+### Important command line Interfaces ###
+
+### docker exec -it [CONTAINTER ID] /bin/bash
+# allows you to access command line interface for airflow
+# check for container ID with docker ps
+# type 'exit' to exit out of the /bin/bash environment
+
+### airflow db init
+# initalizes airflow database
+
+### airflow db reset
+# resets all of airflow database
+
+### airflow db upgrade
+# upgrades schemas of airflow
+
+### airflow webserver
+# runs airflow webserver
+
+### airflow scheduler 
+# runs airflow scheduler
+
+### airflow celery worker
+# this machine is an airflow worker to allow tasks to be worked on machine
+
+### airflow dags list
+# a list of airflow dags
+
+### airflow task lists example_bash_operator
+# shows tasks of a dag
+
+### airflow tasks test example_bash_operator runme_0 2023-06-1
+# tests airflow tasks
+
+#### SECTION 3: The FOREX DATA PIPELINE ####
+
+## Goal of project
+# check availability of forex rates
+# check availability of file having currencies to watch
+# download forex rates with python 
+# save forex rates in HDFS
+# create HIVE table to store forex rates from HDFS
+# process forex rates with spark (submit and trigger spark jobs)
+# send email notification
+# send a slack notification 
+
+## What is an HDFS?
+# Hadoop distributed file system which lets you store as much data as you want
+
+## What is spark?
+# spark job is a data processing tools
+
+## What is Hive?
+# Hive allows you to interact with files stored into HDFS
+
+## What is Hue?
+# some type of dashboard for showing off data
+
+## Why do we use docker?
+# helps us avoid errors and debug and error problems
+# allows you to run and install software regardless of dependencies or system
+
+## three components of airflow
+# webserver - container
+# scheduler - container
+# database - container
+
+## pip install docker-compose
+# make sure you have the latest docker compose to continue 
+# also make sure you have downloaded the latest docker version for your computer
+
+
+### Video 19 ###
+
+## What is a dag? 
+# directed acyclic graph 
+# a dag in airflow is a data pipeline
+
+## How to create a dag in airflow
+# create a dag object 
+# takes 3 arguments (Dag id, start date and schedule interval)
+# catchup=False - you will prevent running non triggered dag run between current date and start date. (basically wont run unused dags)
+
+
+### Video 21 ### 
+
+## What is an operator? 
+# an operator is a task such as (python function using Python operator, bash command using Bash Operator, SQL request using Postgres Operator)
+
+## 3 types of operators
+# action operator - operators that allow you to execute something such as python or bash operator
+# transfer operator - allow you to transfer data from a source to a destination such as mysql to GCS operator 
+# sensor operator - allows you to wait for something to happen before you move on to the next task 
+
+## 
